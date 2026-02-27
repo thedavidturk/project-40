@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import type { AppData, FeedItem, Source, ItemState } from "@/lib/types";
 import {
   loadData,
@@ -12,6 +11,7 @@ import {
   addCollection as addCollectionFn,
   removeCollection as removeCollectionFn,
   pruneOldItems,
+  defaultData,
 } from "@/lib/storage";
 
 async function fetchIngest(sources: Source[]): Promise<FeedItem[]> {
@@ -26,33 +26,72 @@ async function fetchIngest(sources: Source[]): Promise<FeedItem[]> {
 }
 
 export function useAppData() {
-  const [data, setData] = useState<AppData>(() => loadData());
+  // Start with defaults to avoid hydration mismatch, then load from localStorage in useEffect
+  const [data, setData] = useState<AppData>(defaultData);
+  const [hydrated, setHydrated] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const dataRef = useRef(data);
   dataRef.current = data;
 
-  // Persist to localStorage on change
+  // Hydrate from localStorage after mount
   useEffect(() => {
-    saveData(data);
-  }, [data]);
+    const stored = loadData();
+    setData(stored);
+    setHydrated(true);
+  }, []);
 
-  const shouldFetch = isCacheStale(data);
+  // Persist to localStorage on change (skip the initial default)
+  useEffect(() => {
+    if (hydrated) {
+      saveData(data);
+    }
+  }, [data, hydrated]);
 
-  const { isLoading, isFetching } = useQuery({
-    queryKey: ["ingest"],
-    queryFn: () => fetchIngest(dataRef.current.sources),
-    enabled: shouldFetch,
-    select: (newItems) => {
-      // Merge and update state
-      const merged = mergeItems(dataRef.current, newItems);
-      const pruned = pruneOldItems(merged);
-      setData(pruned);
-      return pruned;
-    },
-  });
+  // Fetch feeds when cache is stale
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!isCacheStale(dataRef.current)) return;
+
+    let cancelled = false;
+    setIsFetching(true);
+
+    fetchIngest(dataRef.current.sources)
+      .then((newItems) => {
+        if (cancelled) return;
+        setData((prev) => {
+          const merged = mergeItems(prev, newItems);
+          return pruneOldItems(merged);
+        });
+      })
+      .catch((err) => {
+        console.error("Feed fetch failed:", err);
+      })
+      .finally(() => {
+        if (!cancelled) setIsFetching(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated]);
 
   const refreshFeeds = useCallback(() => {
-    // Force re-fetch by clearing lastFetchedAt
-    setData((prev) => ({ ...prev, lastFetchedAt: null }));
+    const current = dataRef.current;
+    setIsFetching(true);
+
+    fetchIngest(current.sources)
+      .then((newItems) => {
+        setData((prev) => {
+          const merged = mergeItems(prev, newItems);
+          return pruneOldItems(merged);
+        });
+      })
+      .catch((err) => {
+        console.error("Feed refresh failed:", err);
+      })
+      .finally(() => {
+        setIsFetching(false);
+      });
   }, []);
 
   const updateItemState = useCallback(
@@ -150,7 +189,7 @@ export function useAppData() {
   return {
     data,
     items,
-    isLoading: isLoading && shouldFetch,
+    isLoading: !hydrated,
     isFetching,
     refreshFeeds,
     saveItem,

@@ -2,7 +2,7 @@ import { CACHE_TTL_MS, MAX_STORED_ITEMS, STORAGE_KEY } from "./constants";
 import type { AppData, FeedItem, ItemState, Collection } from "./types";
 import { SEED_SOURCES } from "./seedSources";
 
-function defaultData(): AppData {
+export function defaultData(): AppData {
   return {
     sources: [...SEED_SOURCES],
     items: {},
