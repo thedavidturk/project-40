@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { Providers } from "@/components/Providers";
+import { Navigation } from "@/components/Navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Project 40",
-  description: "Built with Next.js",
+  title: "Pillars Radar",
+  description: "High-signal content aggregator across AI + Health, Tech News, and Finance Tools",
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>",
+  },
 };
 
 export default function RootLayout({
@@ -12,9 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">
-        {children}
+    <html lang="en" className="dark">
+      <body className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+        <Providers>
+          <Navigation />
+          <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+        </Providers>
       </body>
     </html>
   );

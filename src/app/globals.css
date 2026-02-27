@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@theme {
+  --color-pillar-ai: #10b981;
+  --color-pillar-tech: #3b82f6;
+  --color-pillar-finance: #f59e0b;
+  --color-surface: #18181b;
+  --color-surface-hover: #27272a;
+  --color-border: #3f3f46;
+}
