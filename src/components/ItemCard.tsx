@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import type { FeedItem, ItemState } from "@/lib/types";
 import { PILLARS, CONTENT_TYPE_LABELS } from "@/lib/constants";
@@ -41,13 +40,15 @@ export function ItemCard({ item, state, onSave, onStar, onSkip }: ItemCardProps)
           <span>{freshness}</span>
         </div>
 
-        {/* Title */}
-        <Link
-          href={`/item/${item.id}`}
-          className="mb-1 block text-sm font-semibold leading-snug text-zinc-100 hover:text-white"
+        {/* Title — links to the original source */}
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-1 block text-sm font-semibold leading-snug text-zinc-100 underline decoration-zinc-700 underline-offset-2 hover:text-white hover:decoration-zinc-500"
         >
           {item.title}
-        </Link>
+        </a>
 
         {/* Summary */}
         {item.summary && (
@@ -85,8 +86,8 @@ export function ItemCard({ item, state, onSave, onStar, onSkip }: ItemCardProps)
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex shrink-0 flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      {/* Actions — always visible */}
+      <div className="flex shrink-0 flex-col gap-1">
         <button
           onClick={onSave}
           title={isSaved ? "Unsave" : "Save"}
@@ -116,14 +117,6 @@ export function ItemCard({ item, state, onSave, onStar, onSkip }: ItemCardProps)
         >
           Skip
         </button>
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded p-1 text-xs text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
-        >
-          Open
-        </a>
       </div>
     </div>
   );
