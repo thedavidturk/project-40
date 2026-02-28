@@ -36,7 +36,9 @@ export const ItemStateSchema = z.object({
   saved: z.boolean().default(false),
   starred: z.boolean().default(false),
   skipped: z.boolean().default(false),
+  seen: z.boolean().default(false),
   note: z.string().default(""),
+  takeaway: z.string().default(""),
   collections: z.array(z.string()).default([]),
 });
 export type ItemState = z.infer<typeof ItemStateSchema>;
@@ -53,6 +55,7 @@ export const FilterStateSchema = z.object({
   types: z.array(ContentType).default([]),
   timeRange: z.enum(["1h", "6h", "24h", "7d", "30d", "all"]).default("24h"),
   highSignalOnly: z.boolean().default(false),
+  newOnly: z.boolean().default(false),
   search: z.string().default(""),
 });
 export type FilterState = z.infer<typeof FilterStateSchema>;
@@ -63,5 +66,6 @@ export const AppDataSchema = z.object({
   itemStates: z.record(z.string(), ItemStateSchema),
   collections: z.array(CollectionSchema),
   lastFetchedAt: z.string().nullable(),
+  lastCheckedAt: z.string().nullable(),
 });
 export type AppData = z.infer<typeof AppDataSchema>;

@@ -36,6 +36,10 @@ export function useAppData() {
   // Hydrate from localStorage after mount
   useEffect(() => {
     const stored = loadData();
+    // Initialize lastCheckedAt on first ever hydration
+    if (!stored.lastCheckedAt) {
+      stored.lastCheckedAt = new Date().toISOString();
+    }
     setData(stored);
     setHydrated(true);
   }, []);
@@ -132,6 +136,20 @@ export function useAppData() {
     [updateItemState]
   );
 
+  const markSeen = useCallback(
+    (itemId: string) => updateItemState(itemId, { seen: true }),
+    [updateItemState]
+  );
+
+  const setTakeaway = useCallback(
+    (itemId: string, takeaway: string) => updateItemState(itemId, { takeaway }),
+    [updateItemState]
+  );
+
+  const touchLastChecked = useCallback(() => {
+    setData((prev) => ({ ...prev, lastCheckedAt: new Date().toISOString() }));
+  }, []);
+
   const toggleItemCollection = useCallback(
     (itemId: string, collectionId: string) => {
       setData((prev) => {
@@ -139,7 +157,9 @@ export function useAppData() {
           saved: false,
           starred: false,
           skipped: false,
+          seen: false,
           note: "",
+          takeaway: "",
           collections: [],
         };
         const has = state.collections.includes(collectionId);
@@ -198,6 +218,9 @@ export function useAppData() {
     unstarItem,
     skipItem,
     setNote,
+    markSeen,
+    setTakeaway,
+    touchLastChecked,
     toggleItemCollection,
     addCollection,
     removeCollection,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import type { FeedItem, ItemState } from "@/lib/types";
 import { PILLARS, CONTENT_TYPE_LABELS } from "@/lib/constants";
@@ -7,26 +8,71 @@ import { PILLARS, CONTENT_TYPE_LABELS } from "@/lib/constants";
 interface ItemCardProps {
   item: FeedItem;
   state: ItemState | undefined;
+  isActive?: boolean;
   onSave: () => void;
   onStar: () => void;
   onSkip: () => void;
+  onMarkSeen?: () => void;
+  onSetTakeaway?: (text: string) => void;
 }
 
-export function ItemCard({ item, state, onSave, onStar, onSkip }: ItemCardProps) {
+export function ItemCard({
+  item,
+  state,
+  isActive,
+  onSave,
+  onStar,
+  onSkip,
+  onMarkSeen,
+  onSetTakeaway,
+}: ItemCardProps) {
   const pillar = PILLARS[item.pillar];
   const isSaved = state?.saved ?? false;
   const isStarred = state?.starred ?? false;
+  const isSeen = state?.seen ?? false;
+  const takeaway = state?.takeaway ?? "";
+  const [takeawayInput, setTakeawayInput] = useState(takeaway);
+  const [showTakeawayInput, setShowTakeawayInput] = useState(false);
   const freshness = formatDistanceToNow(new Date(item.publishedAt), {
     addSuffix: true,
   });
 
+  const handleTitleClick = () => {
+    onMarkSeen?.();
+  };
+
+  const handleTakeawaySubmit = () => {
+    const trimmed = takeawayInput.trim();
+    onSetTakeaway?.(trimmed);
+    if (!trimmed) setShowTakeawayInput(false);
+  };
+
   return (
-    <div className="group relative flex gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 transition-colors hover:border-zinc-700">
-      {/* Pillar color stripe */}
-      <div
-        className="w-1 shrink-0 rounded-full"
-        style={{ backgroundColor: pillar.color }}
-      />
+    <div
+      data-item-id={item.id}
+      className={`group relative flex gap-3 rounded-lg border p-4 transition-colors ${
+        isActive
+          ? "border-zinc-500 ring-1 ring-zinc-500"
+          : "border-zinc-800 hover:border-zinc-700"
+      } bg-zinc-900/50`}
+    >
+      {/* Pillar color stripe — wider + dot for unseen */}
+      <div className="relative flex shrink-0 flex-col items-center">
+        <div
+          className={`rounded-full ${isSeen ? "w-1" : "w-1.5"}`}
+          style={{
+            backgroundColor: pillar.color,
+            height: "100%",
+            opacity: isSeen ? 0.4 : 1,
+          }}
+        />
+        {!isSeen && (
+          <div
+            className="absolute -top-1 h-2 w-2 rounded-full"
+            style={{ backgroundColor: pillar.color }}
+          />
+        )}
+      </div>
 
       <div className="min-w-0 flex-1">
         {/* Top row: source + type + time */}
@@ -45,7 +91,12 @@ export function ItemCard({ item, state, onSave, onStar, onSkip }: ItemCardProps)
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mb-1 block text-sm font-semibold leading-snug text-zinc-100 underline decoration-zinc-700 underline-offset-2 hover:text-white hover:decoration-zinc-500"
+          onClick={handleTitleClick}
+          className={`mb-1 block text-sm font-semibold leading-snug underline underline-offset-2 ${
+            isSeen
+              ? "text-zinc-400 decoration-zinc-700 hover:text-zinc-300 hover:decoration-zinc-600"
+              : "text-zinc-100 decoration-zinc-700 hover:text-white hover:decoration-zinc-500"
+          }`}
         >
           {item.title}
         </a>
@@ -84,6 +135,59 @@ export function ItemCard({ item, state, onSave, onStar, onSkip }: ItemCardProps)
             </span>
           </div>
         </div>
+
+        {/* Takeaway display / input */}
+        {takeaway && !showTakeawayInput ? (
+          <div className="mt-2 flex items-center gap-2 rounded bg-zinc-800/70 px-2 py-1">
+            <span className="flex-1 text-xs text-zinc-300 italic">
+              {takeaway}
+            </span>
+            <button
+              onClick={() => {
+                onSetTakeaway?.("");
+                setTakeawayInput("");
+              }}
+              className="text-xs text-zinc-500 hover:text-zinc-300"
+              title="Clear takeaway"
+            >
+              &times;
+            </button>
+            <button
+              onClick={() => setShowTakeawayInput(true)}
+              className="text-xs text-zinc-500 hover:text-zinc-300"
+              title="Edit takeaway"
+            >
+              Edit
+            </button>
+          </div>
+        ) : showTakeawayInput || (!takeaway && onSetTakeaway) ? (
+          <div className="mt-2">
+            <input
+              type="text"
+              value={takeawayInput}
+              onChange={(e) => setTakeawayInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleTakeawaySubmit();
+                  setShowTakeawayInput(false);
+                }
+                if (e.key === "Escape") {
+                  setTakeawayInput(takeaway);
+                  setShowTakeawayInput(false);
+                }
+              }}
+              onBlur={() => {
+                if (showTakeawayInput) {
+                  handleTakeawaySubmit();
+                  setShowTakeawayInput(false);
+                }
+              }}
+              placeholder="Quick takeaway... (Enter to save)"
+              className="w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100 placeholder-zinc-600 outline-none focus:border-zinc-500"
+            />
+          </div>
+        ) : null}
       </div>
 
       {/* Actions — always visible */}

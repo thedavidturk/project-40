@@ -9,6 +9,7 @@ export function defaultData(): AppData {
     itemStates: {},
     collections: [],
     lastFetchedAt: null,
+    lastCheckedAt: null,
   };
 }
 
@@ -57,7 +58,9 @@ export function updateItemState(
     saved: false,
     starred: false,
     skipped: false,
+    seen: false,
     note: "",
+    takeaway: "",
     collections: [],
   };
   return {

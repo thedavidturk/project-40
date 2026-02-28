@@ -12,17 +12,37 @@ export default function ItemDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data, saveItem, unsaveItem, starItem, unstarItem, setNote } =
-    useAppData();
+  const {
+    data,
+    saveItem,
+    unsaveItem,
+    starItem,
+    unstarItem,
+    setNote,
+    markSeen,
+    setTakeaway,
+  } = useAppData();
 
   const item = data.items[id];
   const state = data.itemStates[id];
 
   const [noteText, setNoteText] = useState(state?.note ?? "");
+  const [takeawayText, setTakeawayText] = useState(state?.takeaway ?? "");
 
   useEffect(() => {
     setNoteText(state?.note ?? "");
   }, [state?.note]);
+
+  useEffect(() => {
+    setTakeawayText(state?.takeaway ?? "");
+  }, [state?.takeaway]);
+
+  // Auto-mark seen when visiting item detail
+  useEffect(() => {
+    if (item && !(state?.seen)) {
+      markSeen(id);
+    }
+  }, [id, item, state?.seen, markSeen]);
 
   if (!item) {
     return (
@@ -141,10 +161,33 @@ export default function ItemDetailPage({
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => markSeen(id)}
             className="rounded-md bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-200"
           >
             Open Original
           </a>
+        </div>
+
+        {/* Takeaway */}
+        <div className="mb-4">
+          <label className="mb-2 block text-xs font-medium text-zinc-500">
+            Takeaway
+          </label>
+          <input
+            type="text"
+            value={takeawayText}
+            onChange={(e) => setTakeawayText(e.target.value)}
+            onBlur={() => setTakeaway(id, takeawayText.trim())}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setTakeaway(id, takeawayText.trim());
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+            placeholder="One-line takeaway..."
+            className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-600 outline-none focus:border-zinc-500"
+          />
         </div>
 
         {/* Notes */}

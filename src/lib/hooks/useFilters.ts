@@ -22,6 +22,7 @@ export function useFilters(
     types: [],
     timeRange: "24h",
     highSignalOnly: false,
+    newOnly: false,
     search: "",
   });
 
@@ -34,6 +35,9 @@ export function useFilters(
       // Skip skipped items
       const state = itemStates[item.id];
       if (state?.skipped) return false;
+
+      // New only filter
+      if (filters.newOnly && state?.seen) return false;
 
       // Pillar filter
       if (filters.pillars.length > 0 && !filters.pillars.includes(item.pillar))

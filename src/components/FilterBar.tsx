@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import type { FilterState, PillarId, ContentType } from "@/lib/types";
 import { PILLARS, CONTENT_TYPE_LABELS } from "@/lib/constants";
 
@@ -17,9 +17,10 @@ interface FilterBarProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   itemCount: number;
+  searchInputRef?: RefObject<HTMLInputElement | null>;
 }
 
-export function FilterBar({ filters, onChange, itemCount }: FilterBarProps) {
+export function FilterBar({ filters, onChange, itemCount, searchInputRef }: FilterBarProps) {
   const [searchInput, setSearchInput] = useState(filters.search);
 
   useEffect(() => {
@@ -129,11 +130,26 @@ export function FilterBar({ filters, onChange, itemCount }: FilterBarProps) {
         >
           High Signal
         </button>
+
+        {/* New only toggle */}
+        <button
+          onClick={() =>
+            onChange({ ...filters, newOnly: !filters.newOnly })
+          }
+          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+            filters.newOnly
+              ? "bg-emerald-600 text-white"
+              : "border border-zinc-700 text-zinc-400 hover:border-zinc-600"
+          }`}
+        >
+          New Only
+        </button>
       </div>
 
       <div className="flex items-center gap-3">
         {/* Search */}
         <input
+          ref={searchInputRef}
           type="text"
           placeholder="Search items..."
           value={searchInput}
