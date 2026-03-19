@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useAppData } from "@/lib/hooks/useAppData";
 import { useFilters } from "@/lib/hooks/useFilters";
 import { useKeyboardNav } from "@/lib/hooks/useKeyboardNav";
 import { FilterBar } from "@/components/FilterBar";
 import { PillarSection } from "@/components/PillarSection";
 import { DailyBriefing } from "@/components/DailyBriefing";
+import { BulkActionBar } from "@/components/BulkActionBar";
 import { KeyboardHints } from "@/components/KeyboardHints";
 import { Skeleton } from "@/components/Skeleton";
 import type { PillarId } from "@/lib/types";
@@ -28,7 +29,11 @@ export default function DashboardPage() {
     markSeen,
     setTakeaway,
     touchLastChecked,
+    updateItemState,
   } = useAppData();
+
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { filters, setFilters, filteredItems } = useFilters(
     items,
@@ -36,6 +41,78 @@ export default function DashboardPage() {
   );
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Bulk selection helpers
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const selectAllVisible = useCallback((ids: string[]) => {
+    setSelectedIds((prev) => {
+      const allSelected = ids.every((id) => prev.has(id));
+      if (allSelected) return new Set();
+      return new Set(ids);
+    });
+  }, []);
+
+  const selectAllInSection = useCallback((ids: string[]) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = ids.every((id) => next.has(id));
+      if (allSelected) {
+        ids.forEach((id) => next.delete(id));
+      } else {
+        ids.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  }, []);
+
+  // Bulk actions
+  const handleBulkSave = useCallback(() => {
+    selectedIds.forEach((id) => saveItem(id));
+    clearSelection();
+  }, [selectedIds, saveItem, clearSelection]);
+
+  const handleBulkStar = useCallback(() => {
+    selectedIds.forEach((id) => starItem(id));
+    clearSelection();
+  }, [selectedIds, starItem, clearSelection]);
+
+  const handleBulkSkip = useCallback(() => {
+    selectedIds.forEach((id) => skipItem(id));
+    clearSelection();
+  }, [selectedIds, skipItem, clearSelection]);
+
+  const handleBulkAssignCollection = useCallback((collectionId: string) => {
+    selectedIds.forEach((id) => {
+      const existing = data.itemStates[id]?.collections ?? [];
+      if (!existing.includes(collectionId)) {
+        updateItemState(id, { saved: true, collections: [...existing, collectionId] });
+      }
+    });
+    clearSelection();
+  }, [selectedIds, data.itemStates, updateItemState, clearSelection]);
+
+  // Dismiss selection on Escape
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && selectedIds.size > 0) {
+        clearSelection();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selectedIds, clearSelection]);
 
   // Build flat item list for keyboard nav (same order as rendered)
   const itemsByPillar = PILLAR_ORDER.map((pillarId) => ({
@@ -121,6 +198,9 @@ export default function DashboardPage() {
               items={pillarItems}
               itemStates={data.itemStates}
               activeItemId={activeItemId}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onSelectAllInSection={selectAllInSection}
               onSave={handleSave}
               onStar={handleStar}
               onSkip={skipItem}
@@ -132,6 +212,21 @@ export default function DashboardPage() {
       )}
 
       <KeyboardHints />
+
+      {selectedIds.size > 0 && (
+        <BulkActionBar
+          selectedCount={selectedIds.size}
+          totalVisible={flatItems.length}
+          collections={data.collections}
+          allSelected={flatItems.every((item) => selectedIds.has(item.id))}
+          onSaveAll={handleBulkSave}
+          onStarAll={handleBulkStar}
+          onSkipAll={handleBulkSkip}
+          onAssignCollection={handleBulkAssignCollection}
+          onSelectAll={() => selectAllVisible(flatItems.map((i) => i.id))}
+          onClearSelection={clearSelection}
+        />
+      )}
     </div>
   );
 }

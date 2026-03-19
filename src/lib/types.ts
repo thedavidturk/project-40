@@ -21,6 +21,7 @@ export const FeedItemSchema = z.object({
   title: z.string(),
   url: z.string(),
   summary: z.string(),
+  imageUrl: z.string().optional(),
   sourceId: z.string(),
   sourceName: z.string(),
   pillar: PillarId,

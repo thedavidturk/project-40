@@ -10,6 +10,9 @@ interface PillarSectionProps {
   items: FeedItem[];
   itemStates: Record<string, ItemState>;
   activeItemId?: string | null;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+  onSelectAllInSection?: (ids: string[]) => void;
   onSave: (id: string) => void;
   onStar: (id: string) => void;
   onSkip: (id: string) => void;
@@ -22,6 +25,9 @@ export function PillarSection({
   items,
   itemStates,
   activeItemId,
+  selectedIds,
+  onToggleSelect,
+  onSelectAllInSection,
   onSave,
   onStar,
   onSkip,
@@ -36,6 +42,12 @@ export function PillarSection({
   const unseenCount = items.filter(
     (item) => !(itemStates[item.id]?.seen)
   ).length;
+
+  const sectionSelectedCount = selectedIds
+    ? items.filter((item) => selectedIds.has(item.id)).length
+    : 0;
+  const allSectionSelected = sectionSelectedCount === items.length && items.length > 0;
+  const selectionVisible = selectedIds ? selectedIds.size > 0 : false;
 
   return (
     <section>
@@ -59,7 +71,18 @@ export function PillarSection({
             {unseenCount} new
           </span>
         )}
-        <span className="ml-auto text-xs text-zinc-600">
+        {onSelectAllInSection && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectAllInSection(items.map((i) => i.id));
+            }}
+            className="ml-auto mr-2 rounded px-2 py-0.5 text-[10px] text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+          >
+            {allSectionSelected ? `Deselect ${items.length}` : `Select ${items.length}`}
+          </button>
+        )}
+        <span className={`text-xs text-zinc-600 ${onSelectAllInSection ? "" : "ml-auto"}`}>
           {collapsed ? "+" : "−"}
         </span>
       </button>
@@ -72,6 +95,9 @@ export function PillarSection({
               item={item}
               state={itemStates[item.id]}
               isActive={activeItemId === item.id}
+              isSelected={selectedIds?.has(item.id)}
+              selectionVisible={selectionVisible}
+              onToggleSelect={onToggleSelect ? () => onToggleSelect(item.id) : undefined}
               onSave={() => onSave(item.id)}
               onStar={() => onStar(item.id)}
               onSkip={() => onSkip(item.id)}

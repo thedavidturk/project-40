@@ -10,6 +10,12 @@ const parser = new Parser({
   headers: {
     "User-Agent": "PillarsRadar/1.0",
   },
+  customFields: {
+    item: [
+      ["media:content", "mediaContent"],
+      ["media:thumbnail", "mediaThumbnail"],
+    ],
+  },
 });
 
 interface IngestRequest {
@@ -63,11 +69,22 @@ async function fetchFeed(
     const tags = assignTags(title, summary, pillar);
     const id = makeId(url);
 
+    // Extract image URL from common RSS media fields
+    const entryAny = entry as unknown as Record<string, unknown>;
+    const enclosure = entryAny.enclosure as { url?: string; type?: string } | undefined;
+    const mediaContent = entryAny.mediaContent as { $?: { url?: string } } | undefined;
+    const mediaThumbnail = entryAny.mediaThumbnail as { $?: { url?: string } } | undefined;
+    const imageUrl =
+      (enclosure?.type?.startsWith("image/") ? enclosure.url : undefined) ??
+      mediaContent?.$?.url ??
+      mediaThumbnail?.$?.url;
+
     items.push({
       id,
       title,
       url,
       summary,
+      ...(imageUrl ? { imageUrl } : {}),
       sourceId: source.id,
       sourceName: source.name,
       pillar,
