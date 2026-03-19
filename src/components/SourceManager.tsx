@@ -62,7 +62,7 @@ export function SourceManager({
 
       {showAdd && (
         <div className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-900 p-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs text-zinc-500">Name</label>
               <input
@@ -128,8 +128,8 @@ export function SourceManager({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-zinc-800">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-lg border border-zinc-800">
+        <table className="w-full min-w-[480px] text-left text-sm">
           <thead className="border-b border-zinc-800 bg-zinc-900/50">
             <tr>
               <th className="px-4 py-2 text-xs font-medium text-zinc-500">

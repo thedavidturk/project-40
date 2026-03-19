@@ -81,6 +81,14 @@ export function addCollection(data: AppData, name: string): AppData {
   return { ...data, collections: [...data.collections, col] };
 }
 
+export function reorderCollections(data: AppData, orderedIds: string[]): AppData {
+  const colMap = new Map(data.collections.map((c) => [c.id, c]));
+  const reordered = orderedIds
+    .map((id) => colMap.get(id))
+    .filter((c): c is Collection => c != null);
+  return { ...data, collections: reordered };
+}
+
 export function removeCollection(data: AppData, collectionId: string): AppData {
   // Remove collection and references from item states
   const collections = data.collections.filter((c) => c.id !== collectionId);

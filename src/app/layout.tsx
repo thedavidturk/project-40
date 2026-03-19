@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
 import { Navigation } from "@/components/Navigation";
 import "./globals.css";
@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,7 +26,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         <Providers>
           <Navigation />
-          <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
+          <main className="mx-auto max-w-7xl px-4 py-4 sm:py-6">{children}</main>
         </Providers>
       </body>
     </html>

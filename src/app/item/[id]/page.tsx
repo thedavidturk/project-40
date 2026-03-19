@@ -81,7 +81,7 @@ export default function ItemDetailPage({
             style={{ backgroundColor: pillar.color }}
           />
           <div className="flex-1">
-            <div className="mb-1 flex items-center gap-2 text-xs text-zinc-500">
+            <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
               <span style={{ color: pillar.color }}>{pillar.label}</span>
               <span>&middot;</span>
               <span>{item.sourceName}</span>
@@ -136,7 +136,7 @@ export default function ItemDetailPage({
         </div>
 
         {/* Actions */}
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 flex flex-wrap gap-2">
           <button
             onClick={() => (isSaved ? unsaveItem(id) : saveItem(id))}
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${

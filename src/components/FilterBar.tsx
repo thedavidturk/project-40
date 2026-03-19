@@ -48,9 +48,9 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
 
   return (
     <div className="space-y-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        {/* Pillar toggles */}
-        <div className="flex gap-1.5">
+      {/* Row 1: Pillar toggles + Type toggles */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {(Object.entries(PILLARS) as [PillarId, (typeof PILLARS)[PillarId]][]).map(
             ([id, pillar]) => {
               const active = filters.pillars.includes(id);
@@ -72,11 +72,9 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
           )}
         </div>
 
-        {/* Divider */}
         <div className="hidden h-5 w-px bg-zinc-700 sm:block" />
 
-        {/* Type toggles */}
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {(
             Object.entries(CONTENT_TYPE_LABELS) as [ContentType, string][]
           ).map(([type, label]) => {
@@ -96,11 +94,10 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
             );
           })}
         </div>
+      </div>
 
-        {/* Divider */}
-        <div className="hidden h-5 w-px bg-zinc-700 sm:block" />
-
-        {/* Time range */}
+      {/* Row 2: Time range + signal/new toggles */}
+      <div className="flex flex-wrap items-center gap-2">
         <div className="flex gap-1">
           {TIME_OPTIONS.map((opt) => (
             <button
@@ -117,7 +114,8 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
           ))}
         </div>
 
-        {/* High signal toggle */}
+        <div className="hidden h-5 w-px bg-zinc-700 sm:block" />
+
         <button
           onClick={() =>
             onChange({ ...filters, highSignalOnly: !filters.highSignalOnly })
@@ -131,7 +129,6 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
           High Signal
         </button>
 
-        {/* New only toggle */}
         <button
           onClick={() =>
             onChange({ ...filters, newOnly: !filters.newOnly })
@@ -146,8 +143,8 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
         </button>
       </div>
 
+      {/* Row 3: Search + count */}
       <div className="flex items-center gap-3">
-        {/* Search */}
         <input
           ref={searchInputRef}
           type="text"
@@ -156,7 +153,7 @@ export function FilterBar({ filters, onChange, itemCount, searchInputRef }: Filt
           onChange={(e) => setSearchInput(e.target.value)}
           className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-zinc-500"
         />
-        <span className="text-xs text-zinc-500">{itemCount} items</span>
+        <span className="shrink-0 text-xs text-zinc-500">{itemCount} items</span>
       </div>
     </div>
   );
