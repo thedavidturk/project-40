@@ -51,7 +51,7 @@ export function DailyBriefing({
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-bold text-zinc-100">
           Today&apos;s Top Picks
         </h2>

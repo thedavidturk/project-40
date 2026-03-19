@@ -18,10 +18,10 @@ export function KeyboardHints() {
 
   return (
     <>
-      {/* Fixed button */}
+      {/* Fixed button — hidden on touch devices where keyboard shortcuts don't apply */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-4 right-4 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-sm font-bold text-zinc-400 shadow-lg transition-colors hover:bg-zinc-700 hover:text-zinc-200"
+        className="fixed bottom-4 right-4 z-50 hidden h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-sm font-bold text-zinc-400 shadow-lg transition-colors hover:bg-zinc-700 hover:text-zinc-200 sm:flex"
         title="Keyboard shortcuts"
       >
         ?
