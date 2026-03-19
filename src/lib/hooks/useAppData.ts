@@ -10,6 +10,7 @@ import {
   updateItemState as updateItemStateFn,
   addCollection as addCollectionFn,
   removeCollection as removeCollectionFn,
+  reorderCollections as reorderCollectionsFn,
   pruneOldItems,
   defaultData,
 } from "@/lib/storage";
@@ -181,6 +182,10 @@ export function useAppData() {
     setData((prev) => removeCollectionFn(prev, collectionId));
   }, []);
 
+  const reorderCollections = useCallback((orderedIds: string[]) => {
+    setData((prev) => reorderCollectionsFn(prev, orderedIds));
+  }, []);
+
   const updateSource = useCallback((sourceId: string, patch: Partial<Source>) => {
     setData((prev) => ({
       ...prev,
@@ -224,6 +229,7 @@ export function useAppData() {
     toggleItemCollection,
     addCollection,
     removeCollection,
+    reorderCollections,
     updateSource,
     addSource,
     removeSource,
